@@ -1,0 +1,40 @@
+# Build artifacts
+/build/
+/cmake-build-*/
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+*.out
+*.log
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+compile_commands.json
+
+# CLion and IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Debug and crash logs
+*.dSYM/
+*.core
+*.stackdump
+
+# Temporary files
+*.swp
+*.swo
+*~
+
+# Ignore test binaries
+testProject
+a.out
