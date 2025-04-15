@@ -1,0 +1,14 @@
+6
+S A B C D Y
+5
+b c d e x
+7
+S -> A
+S -> b
+A -> B
+A -> c
+B -> C
+B -> D
+C -> d
+D -> e
+S

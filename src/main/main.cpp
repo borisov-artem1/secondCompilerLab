@@ -1,83 +1,60 @@
+#include <algorithm>
 #include <iostream>
 #include "../grammar/grammar_info.h"
+#include "../algorithms/left_recursion_deleter/left_recursion_deleter.h"
+#include "../algorithms/chain_rules_deleter/chain_rules_deleter.h"
 
 #include <vector>
 #include <map>
 #include <string>
 #include <sstream>
+#include <filesystem>
 
-using namespace std;
+void parseDir()
+{
+    std::string pathToDir = "../src/tests/input/";
+    int LRcounter = 1;
+    int chainCounter = 1;
 
-using Production = vector<string>;
-using Grammar = map<string, vector<Production>>;
+    std::vector<std::filesystem::directory_entry> files;
 
-
-bool isLeftRecursive(const string& nonterminal, const Production& prod) {
-    return !prod.empty() && prod[0] == nonterminal;
-}
-
-void removeLeftRecursion(Grammar& grammar, const string& nonterminal) {
-    vector<Production> alpha;
-    vector<Production> beta;
-
-    for (const auto& prod : grammar[nonterminal]) {
-        if (isLeftRecursive(nonterminal, prod)) {
-            Production suffix(prod.begin() + 1, prod.end());
-            suffix.push_back(nonterminal + "'");
-            alpha.push_back(suffix);
-        } else {
-            Production newProd = prod;
-            newProd.push_back(nonterminal + "'");
-            beta.push_back(newProd);
+    for (const auto& entry : std::filesystem::directory_iterator(pathToDir))
+    {
+        if (entry.is_regular_file())
+        {
+            files.push_back(entry);
         }
     }
 
-    if (!alpha.empty()) {
-        grammar[nonterminal] = beta;
-        for (auto& prod : alpha) {
-            grammar[nonterminal + "'"].push_back(prod);
-        }
-        grammar[nonterminal + "'"].push_back({"ε"});  // пустая строка
-    }
-}
+    std::ranges::sort(files, [] (const auto& lhs, const auto& rhs)
+    {
+        return lhs.path().filename().string() < rhs.path().filename().string();
+    });
 
-void printGrammar(const Grammar& grammar) {
-    for (const auto& [nt, prods] : grammar) {
-        cout << nt << " → ";
-        for (size_t i = 0; i < prods.size(); ++i) {
-            for (const auto& sym : prods[i]) cout << sym;
-            if (i != prods.size() - 1) cout << " | ";
+    for (const auto& entry : files)
+    {
+        if (entry.is_regular_file())
+        {
+            GrammarInfo grammarInfo;
+            grammarInfo.parseInputFiles(entry.path());
+            LRDeleter::removeLeftRecursion(grammarInfo);
+            LRDeleter::printGrammar(grammarInfo, "LRDelete", LRcounter++);
         }
-        cout << endl;
+    }
+
+    for (const auto& entry : files)
+    {
+        if (entry.is_regular_file())
+        {
+            GrammarInfo grammarInfo;
+            grammarInfo.parseInputFiles(entry.path());
+            ChainRulesDeleter::removeChainRules(grammarInfo);
+            LRDeleter::printGrammar(grammarInfo, "ChainRulesDelete", chainCounter++);
+        }
     }
 }
 
 int main() {
-    Grammar grammar;
-
-    // Пример: A → Aa | Ab | c
-    grammar["E"] = {
-        {"E", "+", "T"},
-        {"T"}
-    };
-    grammar["T"] = {
-        {"T", "*", "F"},
-        {"F"}
-    };
-    grammar["F"] = {
-        {"a"},
-        {"(", "E", ")"}
-    };
-
-    cout << "До удаления левой рекурсии:\n";
-    printGrammar(grammar);
-
-    removeLeftRecursion(grammar, "E");
-    removeLeftRecursion(grammar, "T");
-    removeLeftRecursion(grammar, "F");
-
-    cout << "\nПосле удаления левой рекурсии:\n";
-    printGrammar(grammar);
-
+    parseDir();
     return 0;
 }

@@ -3,7 +3,7 @@ E T F
 5
 + * ( ) a
 6
-E -> E + T | T
+E -> E + T
 E -> T
 T -> T * F
 T -> F

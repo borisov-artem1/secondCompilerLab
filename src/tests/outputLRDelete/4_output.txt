@@ -1,0 +1,13 @@
+6
+S A B X Y Z 
+2
+c d 
+7
+A -> B 
+B -> c 
+S -> A 
+S -> X 
+X -> Y 
+Y -> Z 
+Z -> d 
+S

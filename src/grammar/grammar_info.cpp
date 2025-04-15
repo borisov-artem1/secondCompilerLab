@@ -3,10 +3,15 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+//#include <bits/fs_dir.h>
+#include <filesystem>
 
-void GrammarInfo::parseInputFiles(const std::string& filename)
+#include "../algorithms/chain_rules_deleter/chain_rules_deleter.h"
+#include "../algorithms/left_recursion_deleter/left_recursion_deleter.h"
+
+void GrammarInfo::parseInputFiles(const std::string& path)
 {
-    std::string path = "../src/tests/input/" + filename;
+    //std::string path = "../src/tests/input/" + filename;
     std::ifstream file(path);
     if (!file.is_open())
     {
@@ -23,13 +28,13 @@ void GrammarInfo::parseInputFiles(const std::string& filename)
             tokens.push_back(line);
         }
     }
-    for (const auto& token : tokens[0])
+    for (auto& token : tokens[0])
     {
-        s_nonterm.emplace_back(&token);
+        s_nonterm.emplace_back(1, token);
     }
-    for (const auto& token : tokens[1])
+    for (auto& token : tokens[1])
     {
-        s_term.emplace_back(&token);
+        s_term.emplace_back(1, token);
     }
     for (int i = 2; i < tokens.size(); i++)
     {
@@ -79,27 +84,22 @@ std::vector<std::vector<std::string>> GrammarInfo::getRights(const std::string& 
     return rights;
 }
 
-std::string GrammarInfo::getStartNonterm() const
+void GrammarInfo::parseDir()
 {
-    return start_nonterm;
+    std::string pathToDir = "../src/tests/input/";
+    int LRcounter = 1;
+    int chainCounter = 1;
+
+    for (auto& entry : std::filesystem::directory_iterator(pathToDir))
+    {
+        if (entry.is_regular_file())
+        {
+            parseInputFiles(entry.path());
+            LRDeleter::removeLeftRecursion(*this);
+            LRDeleter::printGrammar(*this, "LRDelete", LRcounter++);
+            ChainRulesDeleter::removeChainRules(*this);
+            LRDeleter::printGrammar(*this, "ChainRulesDelete", chainCounter++);
+        }
+    }
 }
-
-std::vector<std::string> GrammarInfo::getNonterm() const
-{
-    return s_nonterm;
-}
-
-std::map<std::string, std::vector<std::vector<std::string>>> GrammarInfo::getRight() const
-{
-    return s_rights;
-}
-
-std::vector<std::string> GrammarInfo::getTerm() const
-{
-    return s_term;
-}
-
-
-
-
 

@@ -1,0 +1,13 @@
+4
+S A B C 
+4
+a b d c 
+7
+A -> b 
+A -> d 
+B -> d 
+C -> d 
+S -> b 
+S -> d 
+S -> a 
+S
