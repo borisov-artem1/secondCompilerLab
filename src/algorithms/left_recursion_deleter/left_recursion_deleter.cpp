@@ -7,52 +7,84 @@ bool LRDeleter::isLeftRecursion(const std::string& nonterm, const std::vector<st
 {
     return !prod.empty() && prod[0] == nonterm;
 }
-
+//removeEpsilonRules(grammar);
 
 void LRDeleter::removeLeftRecursion(GrammarInfo& grammar)
 {
-    std::map<std::string, std::vector<std::vector<std::string>>> newRules;
-    std::vector<std::string> newNonterms = grammar.s_nonterm;
+    auto& nonterminals = grammar.s_nonterm;
+    auto& productions = grammar.s_rights;
+    std::map<std::string, std::vector<std::vector<std::string>>> new_productions;
+    std::vector<std::string> new_nonterminals = nonterminals;
 
-    for (const auto& A : grammar.s_nonterm)
+    for (size_t i = 0; i < nonterminals.size(); ++i)
     {
+        const std::string& Ai = nonterminals[i];
+
+        // Шаг 1: Заменить Ai → Aj γ, где j < i
+        for (size_t j = 0; j < i; ++j)
+        {
+            const std::string& Aj = nonterminals[j];
+            std::vector<std::vector<std::string>> updated_rules;
+
+            for (const auto& rule : productions[Ai])
+            {
+                if (!rule.empty() && rule[0] == Aj)
+                {
+                    for (const auto& Aj_rule : new_productions[Aj])
+                    {
+                        std::vector<std::string> new_rule = Aj_rule;
+                        new_rule.insert(new_rule.end(), rule.begin() + 1, rule.end());
+                        updated_rules.push_back(new_rule);
+                    }
+                }
+                else
+                {
+                    updated_rules.push_back(rule);
+                }
+            }
+
+            productions[Ai] = updated_rules;
+        }
+
+        // Шаг 2: Устранить непосредственную левую рекурсию у Ai
         std::vector<std::vector<std::string>> alpha;
         std::vector<std::vector<std::string>> beta;
 
-        for (const auto& prod : grammar.s_rights[A])
+        for (const auto& rule : productions[Ai])
         {
-            if (!prod.empty() && prod[0] == A)
+            if (!rule.empty() && rule[0] == Ai)
             {
-                std::vector<std::string> suffix(prod.begin() + 1, prod.end());
-                suffix.push_back(A + "1");
+                std::vector<std::string> suffix(rule.begin() + 1, rule.end());
+                suffix.push_back(Ai + "'");
                 alpha.push_back(suffix);
             }
             else
             {
-                std::vector<std::string> newBeta = prod;
+                std::vector<std::string> new_beta = rule;
                 if (!alpha.empty())
-                    newBeta.push_back(A + "1");
-                beta.push_back(newBeta);
+                    new_beta.push_back(Ai + "'");
+                beta.push_back(new_beta);
             }
         }
 
         if (!alpha.empty())
         {
-            newRules[A] = beta;
+            new_productions[Ai] = beta;
             alpha.push_back({ "ε" });
-            newRules[A + "1"] = alpha;
-            newNonterms.push_back(A + "1");
+            new_productions[Ai + "'"] = alpha;
+
+            new_nonterminals.push_back(Ai + "'");
         }
         else
         {
-            newRules[A] = grammar.s_rights[A];
+            new_productions[Ai] = productions[Ai];
         }
     }
 
-    grammar.s_rights = newRules;
-    grammar.s_nonterm = newNonterms;
-    //removeEpsilonRules(grammar);
+    grammar.s_rights = new_productions;
+    grammar.s_nonterm = new_nonterminals;
 }
+
 
 void LRDeleter::printGrammar(const GrammarInfo& grammar, const std::string& nameDir, int&& counter)
 {
@@ -71,7 +103,6 @@ void LRDeleter::printGrammar(const GrammarInfo& grammar, const std::string& name
     }
     file << "\n";
 
-    // 2. Количество и список терминалов
     file << grammar.s_term.size() << "\n";
     for (const auto& t : grammar.s_term) {
         file << t << " ";

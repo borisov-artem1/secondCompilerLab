@@ -1,12 +1,11 @@
-4
-S A B C 
 3
-x y B 
-6
+A B S 
+2
+x y 
+5
 A -> y 
 A -> x 
 B -> y 
 B -> x 
-C -> x 
 S -> A B 
 S

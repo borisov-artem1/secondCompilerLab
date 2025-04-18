@@ -11,7 +11,7 @@
 
 void GrammarInfo::parseInputFiles(const std::string& path)
 {
-    //std::string path = "../src/tests/input/" + filename;
+    //std::string path = "../src/tests/input_LR/" + filename;
     std::ifstream file(path);
     if (!file.is_open())
     {
@@ -86,7 +86,7 @@ std::vector<std::vector<std::string>> GrammarInfo::getRights(const std::string& 
 
 void GrammarInfo::parseDir()
 {
-    std::string pathToDir = "../src/tests/input/";
+    std::string pathToDir = "../src/tests/input_LR/";
     int LRcounter = 1;
     int chainCounter = 1;
 

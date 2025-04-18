@@ -1,13 +1,11 @@
-6
-S A B X Y Z 
+3
+A B S 
 2
-c d 
-7
-A -> c 
-B -> c 
-S -> c 
-S -> d 
-X -> d 
-Y -> d 
-Z -> d 
+x y 
+5
+A -> y 
+A -> x 
+B -> y 
+B -> x 
+S -> A B 
 S
